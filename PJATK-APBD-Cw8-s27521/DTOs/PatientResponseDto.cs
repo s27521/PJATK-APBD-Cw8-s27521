@@ -1,6 +1,6 @@
 ﻿namespace PJATK_APBD_Cw8_s27521.DTOs;
 
-public class PatientDto
+public class PatientResponseDto
 {
     public string Pesel { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;

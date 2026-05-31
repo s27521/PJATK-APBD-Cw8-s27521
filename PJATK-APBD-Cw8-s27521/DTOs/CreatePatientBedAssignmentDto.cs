@@ -2,7 +2,7 @@
 
 namespace PJATK_APBD_Cw8_s27521.DTOs;
 
-public class UpdatePatientBedAssignmentDto
+public class CreatePatientBedAssignmentDto
 {
     [Required]
     public DateTime From { get; set; }

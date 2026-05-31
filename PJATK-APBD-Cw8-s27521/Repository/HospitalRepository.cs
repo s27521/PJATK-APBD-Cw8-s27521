@@ -1,13 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using PJATK_APBD_Cw8_s27521.DTOs;
 using PJATK_APBD_Cw8_s27521.Infrastructure;
+using PJATK_APBD_Cw8_s27521.Models;
 
 namespace PJATK_APBD_Cw8_s27521.Repository;
 
 public class HospitalRepository(MasterContext context) : IHospitalRepository
 {
-    public Task<List<PatientDto>> GetAllAsync(string? search, CancellationToken cancellationToken)
+    private IHospitalRepository _hospitalRepositoryImplementation;
+
+    public Task<List<PatientResponseDto>> GetAllAsync(string? search, CancellationToken cancellationToken)
     {
         return context.Patients
             .AsNoTracking()
@@ -23,7 +25,7 @@ public class HospitalRepository(MasterContext context) : IHospitalRepository
                 EF.Functions.Like(p.FirstName, $"%{search}%") ||
                 EF.Functions.Like(p.LastName, $"%{search}%"))
             .AsSplitQuery()
-            .Select(p => new PatientDto()
+            .Select(p => new PatientResponseDto()
             {
                 Pesel = p.Pesel,
                 FirstName = p.FirstName,
@@ -72,5 +74,35 @@ public class HospitalRepository(MasterContext context) : IHospitalRepository
             })
             .OrderByDescending(p => p.Pesel)
             .ToListAsync(cancellationToken);
+    }
+
+    public Task<bool> ExistsPatientAsync(string pesel, CancellationToken cancellationToken)
+    {
+        return context.Patients.AnyAsync(e => e.Pesel == pesel, cancellationToken);
+    }
+
+    public Task<bool> ExistsBedByTypeAndWardAsync(CreatePatientBedAssignmentDto dto, CancellationToken cancellationToken)
+    {
+        return context.Beds.AnyAsync(e => e.BedType.Name == dto.BedType && e.Room.Ward.Name == dto.Ward, cancellationToken);
+    }
+
+    public Task<int?> GetBedByTypeAndWardAsync(CreatePatientBedAssignmentDto dto, CancellationToken cancellationToken)
+    {
+        return context.Beds
+            .Where(e => 
+                e.BedType.Name == dto.BedType && e.Room.Ward.Name == dto.Ward &&
+                e.BedAssignments.Any(c => c.To.HasValue && c.To < dto.From))
+            .Select(e => (int?)e.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task AddAsync(BedAssignment bedAssignmentDto, CancellationToken cancellationToken)
+    {
+        await context.BedAssignments.AddAsync(bedAssignmentDto, cancellationToken);
+    }
+
+    public Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        return context.SaveChangesAsync(cancellationToken);
     }
 }
