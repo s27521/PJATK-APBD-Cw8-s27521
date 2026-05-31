@@ -6,7 +6,7 @@ public class PatientDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public int Age { get; set; }
-    public string Sex  { get; set; } = string.Empty;
-    public ICollection<AdmissionDto> Admissions = [];
-    public ICollection<BedAssignmentDto> BedAssignments = [];
+    public string Sex { get; set; } = string.Empty;
+    public ICollection<AdmissionDto> Admissions { get; set; } = [];
+    public ICollection<BedAssignmentDto> BedAssignments { get; set; } = [];
 }
